@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <title>The Beatles Vinyl Player</title>
+    <style>
+        body { 
+            text-align: center; 
+            font-family: 'Pacifico', cursive; 
+            background-color: #ffffff; 
+            color: rgb(0, 0, 0); 
+        }
+
+        /* Smaller Title */
+        h1 {
+            font-size: 24px;  
+            margin-bottom: 10px;
+        }
+
+        /* Vinyl Record (with background image) */
+        .vinyl-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+        }
+
+        /* Background Image */
+        .background {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+
+        /* Vinyl Cover Image */
+        #cover { 
+            width: 80%;  /* Slightly smaller than background */
+            height: 80%;  
+            border-radius: 50%;  
+            object-fit: cover;  
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 1s linear;
+        }
+        .hole {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: black;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5
+        }
+
+        /* Rotate when playing */
+        .spinning {
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Buttons */
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        /* Button Images */
+        button img {
+            width: 50px;
+            height: 50px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Hover Effect */
+        button img:hover {
+            transform: scale(1.1); 
+        }
+    </style>
+</head>
+<body>
+    <h1>The Beatles Vinyl Player</h1>
+    
+    <!-- Vinyl Record -->
+    <div class="vinyl-container">
+        <img class="background" src="images/background.png" alt="Vinyl Background">
+        <img id="cover" src="images/song1.png" alt="Album Art" onerror="this.src='images/default.png'">
+        <div class="hole"></div> <!-- Small Hole in Center -->
+    </div>
+    
+
+    <!-- Image Buttons for Controls -->
+    <button onclick="prevSong()">
+        <img src="images/back.png" alt="Back">
+    </button>
+
+    <button onclick="togglePlay()">
+        <img src="images/play.png" alt="Play">
+    </button>
+
+    <button onclick="nextSong()">
+        <img src="images/next.png" alt="Next">
+    </button>
+
+    <!-- Audio Element -->
+    <audio id="audio"></audio>
+
+    <script>
+        let audio = document.getElementById("audio");
+        let cover = document.getElementById("cover");
+
+        // Song List with Covers
+        const songs = [
+            { src: "songs/song1.mp3", cover: "images/song1.png" },
+            { src: "songs/song2.mp3", cover: "images/song2.png" },
+            { src: "songs/song3.mp3", cover: "images/song3.jpg" },
+            { src: "songs/song4.mp3", cover: "images/song4.png" },
+            { src: "songs/song5.mp3", cover: "images/song5.png" }
+        ];
+
+        let currentSongIndex = 0;
+
+        // Function to Play/Pause Music
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    cover.classList.add("spinning");
+                });
+            } else {
+                audio.pause();
+                cover.classList.remove("spinning");
+            }
+        }
+
+        // Function to Play Previous Song
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            changeSong();
+        }
+
+        // Function to Play Next Song
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            changeSong();
+        }
+
+        // Function to Change Song and Update Cover
+        function changeSong() {
+            audio.pause(); // Pause current song before changing
+            audio.src = songs[currentSongIndex].src;
+            cover.src = songs[currentSongIndex].cover;
+
+            audio.load(); // Load new song
+            audio.play().then(() => {
+                cover.classList.add("spinning"); // Start spinning on play
+            }).catch(error => console.error("Playback error:", error));
+
+            console.log("Now Playing:", songs[currentSongIndex].src);
+        }
+
+        // Stop spinning when song is paused or ends
+        audio.addEventListener("pause", () => cover.classList.remove("spinning"));
+        audio.addEventListener("ended", () => {
+            cover.classList.remove("spinning");
+            nextSong(); // Auto play next song when one finishes
+        });
+
+        // Load the first song and cover on startup
+        audio.src = songs[currentSongIndex].src;
+        cover.src = songs[currentSongIndex].cover;
+    </script>
+</body>
+</html>
